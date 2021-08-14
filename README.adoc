@@ -1,0 +1,23 @@
+= vim-iced-ddc-source
+
+vim-iced plugin for completing with ddc.vim
+
+== Requirements
+
+* https://github.com/vim-denops/denops.vim[denops.vim]
+* https://github.com/Shougo/ddc.vim[ddc.vim]
+* https://github.com/liquidz/vim-iced[vim-iced]
+
+== Configuration
+
+[source,vim]
+----
+call ddc#custom#patch_global('sources', ['iced'])
+call ddc#custom#patch_filetype('clojure', 'sources', ['iced'])
+----
+
+== License
+
+Copyright (c) 2021 http://twitter.com/uochan[Masashi Iizuka].
+
+Distributed under the MIT License.
