@@ -1,13 +1,12 @@
 import {
   BaseSource,
   Candidate,
-  Context,
   DdcOptions,
   SourceOptions,
-} from "https://deno.land/x/ddc_vim@v0.0.13/types.ts#^";
-import { Denops } from "https://deno.land/x/ddc_vim@v0.0.13/deps.ts#^";
-import { once } from "https://deno.land/x/denops_std@v1.4.0/anonymous/mod.ts";
-import * as unknownutil from "https://deno.land/x/unknownutil@v1.1.0/mod.ts";
+} from "https://deno.land/x/ddc_vim@v0.15.0/types.ts#^";
+import { Denops } from "https://deno.land/x/ddc_vim@v0.15.0/deps.ts#^";
+import { once } from "https://deno.land/x/denops_std@v2.0.1/anonymous/mod.ts";
+import * as unknownutil from "https://deno.land/x/unknownutil@v1.1.3/mod.ts";
 
 function convertToCandidates(response: unknown[]): Candidate[] {
   const candidates: Candidate[] = [];
@@ -24,27 +23,28 @@ function convertToCandidates(response: unknown[]): Candidate[] {
   return candidates;
 }
 
-export class Source extends BaseSource {
-  async gatherCandidates(
-    denops: Denops,
-    _context: Context,
-    _ddcOptions: DdcOptions,
-    _sourceOptions: SourceOptions,
-    _sourceParams: Record<string, unknown>,
-    completeStr: string,
-  ): Promise<Candidate[]> {
-    const kw = completeStr;
+type Params = {};
+
+export class Source extends BaseSource<Params> {
+  async gatherCandidates(args: {
+    denops: Denops;
+    options: DdcOptions;
+    sourceOptions: SourceOptions;
+    sourceParams: Params;
+    completeStr: string;
+  }): Promise<Candidate[]> {
+    const kw = args.completeStr;
     const kwLen = kw.length;
     if (kwLen === 0 || (kw[0] === ":" && kwLen < 2)) {
       return [];
     }
 
     return new Promise((resolve) => {
-      denops.call(
+      args.denops.call(
         "iced#ddc#complete",
-        denops.name,
+        args.denops.name,
         kw,
-        once(denops, (response) => {
+        once(args.denops, (response) => {
           if (response instanceof Array) {
             resolve(convertToCandidates(response));
           } else {
@@ -53,5 +53,9 @@ export class Source extends BaseSource {
         })[0],
       );
     });
+  }
+
+  params(): Params {
+    return {};
   }
 }

@@ -11,4 +11,4 @@ lint:
 # https://github.com/hayd/deno-udd
 # deno install -A -f -n udd https://deno.land/x/udd@0.4.0/main.ts
 update:
-	udd denops/ddc/sources/iced.ts
+	udd denops/@ddc-sources/iced.ts
