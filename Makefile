@@ -7,8 +7,10 @@ lint:
 	deno fmt --check *.ts
 	deno lint --unstable
 
-.PHONY: update
-# https://github.com/hayd/deno-udd
-# deno install -A -f -n udd https://deno.land/x/udd@0.4.0/main.ts
-update:
+.PHONY: install-udd
+install-udd:
+	deno install -rf --allow-read=. --allow-write=. --allow-net https://deno.land/x/udd/main.ts
+
+.PHONY: outdated
+outdated:
 	udd denops/@ddc-sources/iced.ts
