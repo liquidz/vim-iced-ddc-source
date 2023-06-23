@@ -1,7 +1,7 @@
-function! iced#ddc#complete(plugin_name, input, once_method_name) abort
+function! iced#ddc#complete(plugin_name, input, lambda_id) abort
+  echom printf('FIXME %s', a:input)
   call iced#complete#candidates(
         \ a:input,
-        \ {response -> denops#request(a:plugin_name, a:once_method_name, [response])}
+        \ {response -> denops#notify(a:plugin_name, a:lambda_id, [response])},
         \ )
 endfunction
-

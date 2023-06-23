@@ -1,42 +1,44 @@
 import {
   BaseSource,
-  Candidate,
   DdcOptions,
+  Item,
   SourceOptions,
-} from "https://deno.land/x/ddc_vim@v0.15.0/types.ts#^";
-import { Denops } from "https://deno.land/x/ddc_vim@v0.15.0/deps.ts#^";
-import { once } from "https://deno.land/x/denops_std@v2.0.1/anonymous/mod.ts";
+} from "https://deno.land/x/ddc_vim@v3.4.0/types.ts";
+import { Denops } from "https://deno.land/x/ddc_vim@v3.4.0/deps.ts";
+import * as lambda from "https://deno.land/x/denops_std@v5.0.1/lambda/mod.ts";
 import * as unknownutil from "https://deno.land/x/unknownutil@v1.1.3/mod.ts";
 
-function convertToCandidates(response: unknown[]): Candidate[] {
-  const candidates: Candidate[] = [];
+function convertToItems(response: unknown[]): Item[] {
+  const items: Item[] = [];
   for (const x of response) {
     if (!unknownutil.isObject(x) || !unknownutil.isString(x.word)) continue;
-    const candidate: Candidate = { word: x.word };
+    const item: Item = { word: x.word };
 
-    if (unknownutil.isString(x.menu)) candidate["menu"] = x.menu;
-    if (unknownutil.isString(x.info)) candidate["info"] = x.info;
-    if (unknownutil.isString(x.kind)) candidate["kind"] = x.kind;
+    if (unknownutil.isString(x.menu)) item["menu"] = x.menu;
+    if (unknownutil.isString(x.info)) item["info"] = x.info;
+    if (unknownutil.isString(x.kind)) item["kind"] = x.kind;
 
-    candidates.push(candidate);
+    items.push(item);
   }
-  return candidates;
+  return items;
 }
 
-type Params = {};
+type Params = {
+  minLength: number;
+};
 
 export class Source extends BaseSource<Params> {
-  async gatherCandidates(args: {
+  override gather(args: {
     denops: Denops;
     options: DdcOptions;
     sourceOptions: SourceOptions;
     sourceParams: Params;
     completeStr: string;
-  }): Promise<Candidate[]> {
+  }): Promise<Item[]> {
     const kw = args.completeStr;
     const kwLen = kw.length;
-    if (kwLen === 0 || (kw[0] === ":" && kwLen < 2)) {
-      return [];
+    if (kwLen === 0 || (kw[0] === ":" && kwLen < args.sourceParams.minLength)) {
+      return Promise.resolve([]);
     }
 
     return new Promise((resolve) => {
@@ -44,18 +46,20 @@ export class Source extends BaseSource<Params> {
         "iced#ddc#complete",
         args.denops.name,
         kw,
-        once(args.denops, (response) => {
+        lambda.register(args.denops, (response) => {
           if (response instanceof Array) {
-            resolve(convertToCandidates(response));
+            resolve(convertToItems(response));
           } else {
             resolve([]);
           }
-        })[0],
+        }),
       );
     });
   }
 
   params(): Params {
-    return {};
+    return {
+      minLength: 2,
+    };
   }
 }
